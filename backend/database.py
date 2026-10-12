@@ -39,7 +39,7 @@ def seed_required_staff_accounts(connection):
             "school_id": "LIB-001",
             "name": "PTC Librarian",
             "email": "librarian@paterostechnologicalcollege.edu.ph",
-            "password": "library01",
+            "password": "librarian123",
             "role": "Librarian",
             "department": "Library",
         },
@@ -434,8 +434,8 @@ def initialize_database():
         user_count = connection.execute("SELECT COUNT(*) FROM users").fetchone()[0]
         if user_count == 0:
             users = [
-                ("MIS-001", "PTC MIS", "sayasleonardo3@gmail.com", "admin123", "MIS Admin", "MIS"),
-                ("LIB-001", "PTC Librarian", "leosayas04@gmail.com", "librarian123", "Librarian", "Library"),
+                ("MIS-001", "PTC MIS", "mis@paterostechnologicalcollege.edu.ph", "admin123", "MIS Admin", "MIS"),
+                ("LIB-001", "PTC Librarian", "labrarian@paterostechnologicalcollege.edu.ph", "librarian123", "Librarian", "Library"),
                 ("2023-10252", "Sandara Panis", "2023-10252@student.ptc.local", None, "Student", "BSIT"),
                 ("2022-09512", "Leonardo Sayas", "2022-09512@student.ptc.local", None, "Student", "BSIT"),
                 ("2023-87463", "Kathleen Mangui", "2023-87463@student.ptc.local", None, "Student", "BSIT"),

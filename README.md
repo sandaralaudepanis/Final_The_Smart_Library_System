@@ -51,8 +51,8 @@ Leave this terminal running too. On its first start, the station downloads the Y
 
 When created, the default development staff accounts use:
 
-- MIS Admin: `sayasleonardo3@gmail.com` / `admin123`
-- Librarian: `leosayas04@gmail.com` / `librarian123`
+- MIS Admin: `mis@paterostechnologicalcollege.edu.ph` / `admin123`
+- Librarian: `labrarian@paterostechnologicalcollege.edu.ph` / `librarian123`
 
 These are not replacement credentials for an existing database; existing accounts and passwords are preserved. Sign in as MIS Admin, add or select a person, and upload that person's face image. Then use the camera station, select **Time-in** or **Time-out**, and confirm the action after the person is recognized. Recognition alone does not record attendance.
 
@@ -74,8 +74,8 @@ The Flask development servers bind to `127.0.0.1` and are for local development,
 
 These accounts are created when missing with the initial passwords below. Existing account passwords are preserved, and people records remain in their current database IDs.
 
-- MIS Admin: `sayasleonardo3@gmail.com` / `admin123`
-- Librarian: `leosayas04@gmail.com` / `librarian123`
+- MIS Admin: `mis@paterostechnologicalcollege.edu.ph` / `admin123`
+- Librarian: `labrarian@paterostechnologicalcollege.edu.ph` / `librarian123`
 
 Change these development passwords before exposing the system to a network. In a deployed environment, set a strong `SMART_LIBRARY_SECRET` and use HTTPS (`SMART_LIBRARY_HTTPS=1`).
 

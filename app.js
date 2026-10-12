@@ -245,11 +245,14 @@
           expired: "Expired",
           completed: "Completed"
         };
-        const actions = item.status === "pending"
-          ? '<div class="recovery-action"><button type="button" data-action="view" data-request-id="' + item.id + '">View Request</button>' +
+        let actions = '<span class="recovery-action">—</span>';
+        if (item.status === "pending") {
+          actions = '<div class="recovery-action"><button type="button" data-action="view" data-request-id="' + item.id + '">View Request</button>' +
             '<button type="button" data-action="approve" data-request-id="' + item.id + '">Approve</button>' +
-            '<button type="button" data-action="reject" data-request-id="' + item.id + '">Reject</button></div>'
-          : '<span class="recovery-action">—</span>';
+            '<button type="button" data-action="reject" data-request-id="' + item.id + '">Reject</button></div>';
+        } else if (item.status === "completed" || item.status === "expired") {
+          actions = '<div class="recovery-action"><button type="button" data-action="delete" data-request-id="' + item.id + '">Delete</button></div>';
+        }
         return '<tr data-request-id="' + item.id + '">' +
           '<td>' + escapeHtml(item.librarian_name) + '</td>' +
           '<td>' + escapeHtml(item.email) + '</td>' +
@@ -272,6 +275,21 @@
           "Status: " + row.cells[3].textContent,
           "Verify the Librarian in person before approving. The code is only shown after approval."
         ].join("\n\n"), "Close", function () {});
+        return;
+      }
+      if (button.dataset.action === "delete") {
+        showDialog(
+          "Delete Recovery Request",
+          [],
+          "Permanently delete the " + row.cells[3].textContent.toLowerCase() +
+            " password recovery request for " + row.cells[0].textContent + "?",
+          "Delete",
+          async function () {
+            const result = await request("/auth/recovery/requests/" + requestId, { method: "DELETE" });
+            notify(result.message);
+            await refresh();
+          }
+        );
         return;
       }
       const decision = button.dataset.action;

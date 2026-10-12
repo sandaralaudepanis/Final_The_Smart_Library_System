@@ -448,6 +448,27 @@ def list_recovery_requests():
     return jsonify({"requests": [dict(row) for row in rows]})
 
 
+@app.delete("/api/auth/recovery/requests/<int:request_id>")
+@roles_required("MIS Admin")
+def delete_recovery_request(request_id):
+    with get_connection() as connection:
+        connection.execute("BEGIN IMMEDIATE")
+        recovery_request = connection.execute(
+            "SELECT status FROM password_recovery_requests WHERE id = ?",
+            (request_id,),
+        ).fetchone()
+        if not recovery_request:
+            return api_error("Password recovery request not found.", 404)
+        if recovery_request["status"] not in ("completed", "expired"):
+            return api_error("Only completed or expired recovery requests can be deleted.", 409)
+        recovery_audit(connection, request_id, f"deleted_request:{request_id}", g.user["id"])
+        connection.execute(
+            "DELETE FROM password_recovery_requests WHERE id = ?",
+            (request_id,),
+        )
+    return jsonify({"message": "Password recovery request deleted."})
+
+
 @app.post("/api/auth/recovery/approve")
 @roles_required("MIS Admin")
 def approve_recovery_request():

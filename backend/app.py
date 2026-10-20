@@ -1036,13 +1036,11 @@ def return_book(transaction_id):
         )
         if transaction_update.rowcount == 0:
             return api_error("This book has already been returned.", 409)
-        stock_update = connection.execute(
+        connection.execute(
             """UPDATE books SET available_quantity = available_quantity + 1
                WHERE id = ? AND available_quantity < quantity""",
             (transaction["book_id"],),
         )
-        if stock_update.rowcount == 0:
-            raise RuntimeError("Returned book stock could not be restored without exceeding quantity.")
     return jsonify({"message": "Book returned."})
 
 
@@ -1144,42 +1142,58 @@ def attendance_api_response(event_type):
     except ValueError as error:
         return api_error(str(error))
     timestamp = manila_now()
-    with get_connection() as connection:
-        connection.execute("BEGIN IMMEDIATE")
-        person = connection.execute(
-            """SELECT id, school_id, name, role, person_type, department, status, face_encoding
-               FROM users WHERE school_id = ?""",
-            (school_id,),
-        ).fetchone()
-        if not person or person["role"] in ("MIS Admin", "Librarian"):
-            return api_error("No registered library person has that school ID.", 404)
-        if person["status"] != "active":
-            return api_error("Inactive people cannot record attendance.", 403)
-        if not person["face_encoding"]:
-            return api_error("This person has not completed face registration.", 409)
-        active = connection.execute(
-            "SELECT id FROM attendance_records WHERE person_id = ? AND time_out IS NULL",
-            (person["id"],),
-        ).fetchone()
-        if event_type == "time_in":
-            if active:
-                return api_error("This person already has an active Time-in.", 409)
-            connection.execute(
-                """INSERT INTO attendance_records
-                   (person_id, person_school_id, person_name, person_role, person_department,
-                    time_in, attendance_date, source, status)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, 'face_recognition', 'inside')""",
-                (person["id"], person["school_id"], person["name"], person["person_type"] or person["role"],
-                 person["department"], timestamp, timestamp[:10]),
-            )
-        else:
-            if not active:
-                return api_error("This person has no active Time-in to close.", 409)
-            connection.execute(
-                """UPDATE attendance_records SET time_out = ?, status = 'completed'
-                   WHERE id = ? AND time_out IS NULL""",
-                (timestamp, active["id"]),
-            )
+    person_id = None
+    try:
+        with get_connection() as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            person = connection.execute(
+                """SELECT id, school_id, name, role, person_type, department, status, face_encoding
+                   FROM users WHERE school_id = ?""",
+                (school_id,),
+            ).fetchone()
+            if not person or person["role"] in ("MIS Admin", "Librarian"):
+                return api_error("No registered library person has that school ID.", 404)
+            person_id = person["id"]
+            if person["status"] != "active":
+                return api_error("Inactive people cannot record attendance.", 403)
+            if not person["face_encoding"]:
+                return api_error("This person has not completed face registration.", 409)
+            active = connection.execute(
+                "SELECT id FROM attendance_records WHERE person_id = ? AND time_out IS NULL",
+                (person_id,),
+            ).fetchone()
+            if event_type == "time_in":
+                if active:
+                    return api_error("This person already has an active Time-in.", 409)
+                connection.execute(
+                    """INSERT INTO attendance_records
+                       (person_id, person_school_id, person_name, person_role, person_department,
+                        time_in, attendance_date, source, status)
+                       VALUES (?, ?, ?, ?, ?, ?, ?, 'face_recognition', 'inside')""",
+                    (person_id, person["school_id"], person["name"], person["person_type"] or person["role"],
+                     person["department"], timestamp, timestamp[:10]),
+                )
+            else:
+                if not active:
+                    return api_error("This person has no active Time-in to close.", 409)
+                cursor = connection.execute(
+                    """UPDATE attendance_records SET time_out = ?, status = 'completed'
+                       WHERE id = ? AND time_out IS NULL""",
+                    (timestamp, active["id"]),
+                )
+                if cursor.rowcount == 0:
+                    return api_error("This person has no active Time-in to close.", 409)
+    except INTEGRITY_ERROR_TYPES:
+        if event_type != "time_in" or person_id is None:
+            raise
+        with get_connection() as connection:
+            active = connection.execute(
+                "SELECT id FROM attendance_records WHERE person_id = ? AND time_out IS NULL",
+                (person_id,),
+            ).fetchone()
+        if not active:
+            raise
+        return api_error("This person already has an active Time-in.", 409)
     return jsonify({
         "event": event_type,
         "timestamp": timestamp,

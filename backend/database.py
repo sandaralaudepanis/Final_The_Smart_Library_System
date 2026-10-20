@@ -1,20 +1,150 @@
 """SQLite setup and starter records for the Smart Library System."""
 
+import os
+import re
 import sqlite3
 from contextlib import contextmanager
 from pathlib import Path
 
+from dotenv import load_dotenv
+import psycopg2
+from psycopg2 import extensions
+from psycopg2.extras import RealDictCursor
 from werkzeug.security import generate_password_hash
 
 
 DATABASE_PATH = Path(__file__).resolve().parent.parent / "smart_library.db"
+load_dotenv(DATABASE_PATH.parent / ".env")
+
+DATABASE_ERROR_TYPES = (sqlite3.Error, psycopg2.Error)
+INTEGRITY_ERROR_TYPES = (sqlite3.IntegrityError, psycopg2.IntegrityError)
+_IDENTITY_TABLES = {
+    "users",
+    "books",
+    "book_transactions",
+    "attendance_records",
+    "password_recovery_requests",
+    "password_recovery_audit",
+}
+
+
+class _DatabaseRow(dict):
+    def __init__(self, row):
+        super().__init__(row)
+        self._column_names = tuple(row.keys())
+
+    def __getitem__(self, key):
+        if isinstance(key, int):
+            key = self._column_names[key]
+        return super().__getitem__(key)
+
+
+class _PostgresCursor:
+    def __init__(self, cursor):
+        self._cursor = cursor
+        self._lastrowid = None
+        self._pending_row = None
+
+    @property
+    def lastrowid(self):
+        return self._lastrowid
+
+    @property
+    def rowcount(self):
+        return self._cursor.rowcount
+
+    def execute(self, sql, parameters=()):
+        sql = sql.replace("?", "%s")
+        insert = re.match(
+            r"\s*INSERT(?:\s+OR\s+\w+)?\s+INTO\s+([a-zA-Z_]\w*)",
+            sql,
+            re.IGNORECASE,
+        )
+        append_returning = (
+            insert is not None
+            and insert.group(1).lower() in _IDENTITY_TABLES
+            and not re.search(r"\bRETURNING\b", sql, re.IGNORECASE)
+        )
+        if append_returning:
+            sql = sql.rstrip().rstrip(";") + " RETURNING id"
+        self._cursor.execute(sql, parameters)
+        self._lastrowid = None
+        self._pending_row = None
+        if append_returning:
+            row = self._cursor.fetchone()
+            if row is not None:
+                self._lastrowid = row["id"]
+                self._pending_row = _DatabaseRow(row)
+        return self
+
+    def executemany(self, sql, parameter_sets):
+        self._cursor.executemany(sql.replace("?", "%s"), parameter_sets)
+        self._lastrowid = None
+        self._pending_row = None
+        return self
+
+    def fetchone(self):
+        if self._pending_row is not None:
+            row = self._pending_row
+            self._pending_row = None
+            return row
+        row = self._cursor.fetchone()
+        return _DatabaseRow(row) if row is not None else None
+
+    def fetchmany(self, size=None):
+        rows = self._cursor.fetchmany(size) if size is not None else self._cursor.fetchmany()
+        if self._pending_row is not None:
+            rows.insert(0, self._pending_row)
+            self._pending_row = None
+        return [_DatabaseRow(row) for row in rows]
+
+    def fetchall(self):
+        rows = self._cursor.fetchall()
+        if self._pending_row is not None:
+            rows.insert(0, self._pending_row)
+            self._pending_row = None
+        return [_DatabaseRow(row) for row in rows]
+
+    def __iter__(self):
+        while True:
+            row = self.fetchone()
+            if row is None:
+                return
+            yield row
+
+
+class _PostgresConnection:
+    def __init__(self, connection):
+        self._connection = connection
+
+    def execute(self, sql, parameters=()):
+        cursor = _PostgresCursor(self._connection.cursor(cursor_factory=RealDictCursor))
+        return cursor.execute(sql, parameters)
+
+    def executemany(self, sql, parameter_sets):
+        cursor = _PostgresCursor(self._connection.cursor(cursor_factory=RealDictCursor))
+        return cursor.executemany(sql, parameter_sets)
+
+    def commit(self):
+        self._connection.commit()
+
+    def rollback(self):
+        self._connection.rollback()
+
+    def close(self):
+        self._connection.close()
 
 
 @contextmanager
 def get_connection():
-    connection = sqlite3.connect(DATABASE_PATH)
-    connection.row_factory = sqlite3.Row
-    connection.execute("PRAGMA foreign_keys = ON")
+    database_url = os.environ.get("DATABASE_URL")
+    if database_url:
+        dsn = extensions.make_dsn(database_url, sslmode="require")
+        connection = _PostgresConnection(psycopg2.connect(dsn))
+    else:
+        connection = sqlite3.connect(DATABASE_PATH)
+        connection.row_factory = sqlite3.Row
+        connection.execute("PRAGMA foreign_keys = ON")
     try:
         yield connection
         connection.commit()

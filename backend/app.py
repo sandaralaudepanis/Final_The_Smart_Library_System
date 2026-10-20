@@ -7,7 +7,6 @@ import math
 import os
 import re
 import secrets
-import sqlite3
 from datetime import date, datetime, timedelta
 from functools import wraps
 from pathlib import Path
@@ -18,9 +17,21 @@ from flask import Flask, Response, abort, g, jsonify, redirect, request, send_fr
 from werkzeug.security import check_password_hash, generate_password_hash
 
 try:
-    from database import DATABASE_PATH, get_connection, initialize_database
+    from database import (
+        DATABASE_ERROR_TYPES,
+        INTEGRITY_ERROR_TYPES,
+        DATABASE_PATH,
+        get_connection,
+        initialize_database,
+    )
 except ModuleNotFoundError:  # pragma: no cover - supports running from repo root
-    from backend.database import DATABASE_PATH, get_connection, initialize_database
+    from backend.database import (
+        DATABASE_ERROR_TYPES,
+        INTEGRITY_ERROR_TYPES,
+        DATABASE_PATH,
+        get_connection,
+        initialize_database,
+    )
 
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
@@ -836,7 +847,7 @@ def create_book():
                 (book_number, barcode, title, author, category, published_date, quantity, quantity),
             )
         return jsonify({"id": cursor.lastrowid, "message": "Book added."}), 201
-    except sqlite3.IntegrityError:
+    except INTEGRITY_ERROR_TYPES:
         with get_connection() as connection:
             if connection.execute("SELECT 1 FROM books WHERE barcode = ?", (data.get("barcode"),)).fetchone():
                 return api_error("This barcode is already assigned to another book.", 409)
@@ -874,7 +885,7 @@ def update_book(book_id):
         return jsonify({"message": "Book updated."})
     except (ValueError, TypeError) as error:
         return api_error(str(error))
-    except sqlite3.IntegrityError:
+    except INTEGRITY_ERROR_TYPES:
         if "barcode" in values:
             with get_connection() as connection:
                 if connection.execute("SELECT 1 FROM books WHERE barcode = ? AND id != ?",
@@ -986,7 +997,7 @@ def borrow_book():
             )
             connection.execute("UPDATE books SET available_quantity = available_quantity - 1 WHERE id = ?", (book["id"],))
         return jsonify({"message": "Book borrowed."}), 201
-    except sqlite3.IntegrityError:
+    except INTEGRITY_ERROR_TYPES:
         return api_error("Unable to create the transaction.", 409)
 
 
@@ -1247,7 +1258,7 @@ def create_user():
         return jsonify({"id": cursor.lastrowid, "message": "User added."}), 201
     except (ValueError, TypeError) as error:
         return api_error(str(error))
-    except sqlite3.IntegrityError:
+    except INTEGRITY_ERROR_TYPES:
         return api_error("School ID or email is already in use.", 409)
 
 
@@ -1294,7 +1305,7 @@ def update_user(user_id):
         return jsonify({"message": "User updated."})
     except (ValueError, TypeError) as error:
         return api_error(str(error))
-    except sqlite3.IntegrityError:
+    except INTEGRITY_ERROR_TYPES:
         return api_error("School ID or email is already in use.", 409)
 
 
@@ -1415,7 +1426,7 @@ def create_person():
         return jsonify({"id": cursor.lastrowid, "message": "People information saved."}), 201
     except (ValueError, TypeError) as error:
         return api_error(str(error))
-    except sqlite3.IntegrityError:
+    except INTEGRITY_ERROR_TYPES:
         return api_error("That School ID is already registered.", 409)
 
 
@@ -1447,7 +1458,7 @@ def update_person(person_id):
         return jsonify({"message": "People information updated."})
     except (ValueError, TypeError) as error:
         return api_error(str(error))
-    except sqlite3.IntegrityError:
+    except INTEGRITY_ERROR_TYPES:
         return api_error("That School ID is already registered.", 409)
 
 
@@ -1590,7 +1601,7 @@ def create_system_user():
         return jsonify({"id": cursor.lastrowid, "message": "System account added."}), 201
     except (ValueError, TypeError) as error:
         return api_error(str(error))
-    except sqlite3.IntegrityError:
+    except INTEGRITY_ERROR_TYPES:
         return api_error("School ID or email is already in use.", 409)
 
 
@@ -1737,10 +1748,13 @@ def frontend_files(requested_path):
     return send_from_directory(PROJECT_ROOT, requested_path)
 
 
-@app.errorhandler(sqlite3.Error)
 def handle_database_error(error):
     app.logger.exception("Database request failed: %s", error)
     return jsonify({"error": "A database error occurred. Please try again."}), 500
+
+
+for database_error in DATABASE_ERROR_TYPES:
+    app.register_error_handler(database_error, handle_database_error)
 
 
 @app.errorhandler(413)

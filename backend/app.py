@@ -1404,13 +1404,15 @@ def list_people():
         rows = connection.execute(
             f"""SELECT id, school_id, name, {person_role_expression()} AS role,
                        department, contact, status, created_at,
-                       CASE WHEN face_image = '' THEN 0 ELSE 1 END AS has_face_image,
-                       CASE WHEN face_encoding = '' THEN 0 ELSE 1 END AS face_registered
+                       CASE WHEN COALESCE(face_image, '') = '' THEN 0 ELSE 1 END AS has_face_image,
+                       CASE WHEN COALESCE(face_encoding, '') = '' THEN 0 ELSE 1 END AS face_registered
                 FROM users
                 WHERE role NOT IN ('MIS Admin', 'Librarian')
-                  AND (school_id LIKE ? OR name LIKE ? OR department LIKE ? OR {person_role_expression()} LIKE ?)
+                  AND (LOWER(school_id) LIKE LOWER(?) OR LOWER(name) LIKE LOWER(?)
+                       OR LOWER(department) LIKE LOWER(?)
+                       OR LOWER({person_role_expression()}) LIKE LOWER(?))
                   AND (? = '' OR {person_role_expression()} = ?)
-                ORDER BY CASE status WHEN 'active' THEN 0 ELSE 1 END, name COLLATE NOCASE""",
+                ORDER BY CASE status WHEN 'active' THEN 0 ELSE 1 END, LOWER(name)""",
             (search, search, search, search, person_role, person_role),
         ).fetchall()
     return jsonify({"people": [dict(row) for row in rows]})
@@ -1664,7 +1666,8 @@ def iot_face_enrollments():
         rows = connection.execute(
             f"""SELECT id, school_id, name, {person_role_expression()} AS role, department
                 FROM users WHERE status = 'active' AND role NOT IN ('MIS Admin', 'Librarian')
-                  AND face_image != '' AND face_encoding = '' ORDER BY id"""
+                  AND COALESCE(face_image, '') != ''
+                  AND COALESCE(face_encoding, '') = '' ORDER BY id"""
         ).fetchall()
     return jsonify({"people": [dict(row) for row in rows]})
 
@@ -1701,7 +1704,8 @@ def iot_store_face_encoding(person_id):
     with get_connection() as connection:
         cursor = connection.execute(
             """UPDATE users SET face_encoding = ? WHERE id = ? AND status = 'active'
-               AND role NOT IN ('MIS Admin', 'Librarian') AND face_image != ''""",
+               AND role NOT IN ('MIS Admin', 'Librarian')
+               AND COALESCE(face_image, '') != ''""",
             (json.dumps(normalized, separators=(",", ":")), person_id),
         )
         if cursor.rowcount == 0:
@@ -1717,8 +1721,8 @@ def iot_face_templates():
             f"""SELECT u.id, u.school_id, u.name, {person_role_expression()} AS role,
                        u.department, u.status, u.face_encoding,
                        EXISTS(SELECT 1 FROM attendance_records a WHERE a.person_id = u.id AND a.time_out IS NULL) AS is_inside
-                FROM users u WHERE u.role NOT IN ('MIS Admin', 'Librarian')
-                  AND u.face_encoding != '' ORDER BY u.id"""
+               FROM users u WHERE u.role NOT IN ('MIS Admin', 'Librarian')
+                 AND COALESCE(u.face_encoding, '') != '' ORDER BY u.id"""
         ).fetchall()
     templates = []
     for row in rows:

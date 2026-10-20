@@ -4,3 +4,4 @@ __pycache__/
 /smart_library.db
 /backend/uploads/
 /face_recognition_iot/.models/
+.env

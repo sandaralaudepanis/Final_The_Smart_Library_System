@@ -181,20 +181,24 @@ def transaction_rows(search="", date_from="", date_to=""):
         JOIN books b ON b.id = t.book_id
         LEFT JOIN users u ON u.id = t.borrower_id
         LEFT JOIN users staff ON staff.id = t.processed_by
-        WHERE (b.title LIKE ? OR b.book_number LIKE ? OR b.barcode LIKE ?
-               OR COALESCE(NULLIF(t.borrower_name, ''), u.name, '') LIKE ?
-               OR COALESCE(NULLIF(t.borrower_school_id, ''), u.school_id, '') LIKE ?)
+        WHERE (LOWER(b.title) LIKE LOWER(?) OR LOWER(b.book_number) LIKE LOWER(?)
+               OR LOWER(b.barcode) LIKE LOWER(?)
+               OR LOWER(COALESCE(NULLIF(t.borrower_name, ''), u.name, '')) LIKE LOWER(?)
+               OR LOWER(COALESCE(NULLIF(t.borrower_school_id, ''), u.school_id, '')) LIKE LOWER(?))
     """
     search_term = f"%{search}%"
     parameters = [manila_now()[:10], search_term, search_term, search_term, search_term, search_term]
     if date_from and date_to:
-        sql += " AND ((date(t.borrow_date) BETWEEN ? AND ?) OR (date(t.return_date) BETWEEN ? AND ?))"
+        sql += " AND ((SUBSTRING(t.borrow_date, 1, 10) BETWEEN ? AND ?) "
+        sql += "OR (SUBSTRING(t.return_date, 1, 10) BETWEEN ? AND ?))"
         parameters.extend([date_from, date_to, date_from, date_to])
     elif date_from:
-        sql += " AND (date(t.borrow_date) >= ? OR date(t.return_date) >= ?)"
+        sql += " AND (SUBSTRING(t.borrow_date, 1, 10) >= ? "
+        sql += "OR SUBSTRING(t.return_date, 1, 10) >= ?)"
         parameters.extend([date_from, date_from])
     elif date_to:
-        sql += " AND (date(t.borrow_date) <= ? OR date(t.return_date) <= ?)"
+        sql += " AND (SUBSTRING(t.borrow_date, 1, 10) <= ? "
+        sql += "OR SUBSTRING(t.return_date, 1, 10) <= ?)"
         parameters.extend([date_to, date_to])
     sql += " ORDER BY t.created_at DESC, t.id DESC"
     with get_connection() as connection:
@@ -228,10 +232,10 @@ def attendance_rows(search="", date_from="", date_to="", role="", department="",
                     WHEN 'inside' THEN 'Inside' ELSE 'Completed' END AS status
         FROM attendance_records a
         LEFT JOIN users u ON u.id = a.person_id
-        WHERE (COALESCE(a.person_school_id, u.school_id, '') LIKE ?
-               OR COALESCE(a.person_name, u.name, '') LIKE ?)
+        WHERE (LOWER(COALESCE(a.person_school_id, u.school_id, '')) LIKE LOWER(?)
+               OR LOWER(COALESCE(a.person_name, u.name, '')) LIKE LOWER(?))
           AND (? = '' OR COALESCE(NULLIF(a.person_role, ''), NULLIF(u.person_type, ''), u.role, '') = ?)
-          AND (? = '' OR COALESCE(a.person_department, u.department, '') LIKE ?)
+          AND (? = '' OR LOWER(COALESCE(a.person_department, u.department, '')) LIKE LOWER(?))
           AND (u.id IS NULL OR u.role NOT IN ('MIS Admin', 'Librarian'))
     """
     search_term = f"%{search}%"
@@ -242,29 +246,32 @@ def attendance_rows(search="", date_from="", date_to="", role="", department="",
         sql += " AND a.time_out IS NOT NULL"
     if date_from and date_to:
         if event_type == "time_in":
-            sql += " AND substr(a.time_in, 1, 10) BETWEEN ? AND ?"
+            sql += " AND SUBSTRING(a.time_in, 1, 10) BETWEEN ? AND ?"
             parameters.extend([date_from, date_to])
         elif event_type == "time_out":
-            sql += " AND substr(a.time_out, 1, 10) BETWEEN ? AND ?"
+            sql += " AND SUBSTRING(a.time_out, 1, 10) BETWEEN ? AND ?"
             parameters.extend([date_from, date_to])
         else:
-            sql += " AND (substr(a.time_in, 1, 10) BETWEEN ? AND ? OR substr(a.time_out, 1, 10) BETWEEN ? AND ?)"
+            sql += " AND (SUBSTRING(a.time_in, 1, 10) BETWEEN ? AND ? "
+            sql += "OR SUBSTRING(a.time_out, 1, 10) BETWEEN ? AND ?)"
             parameters.extend([date_from, date_to, date_from, date_to])
     elif date_from:
         if event_type == "all":
-            sql += " AND (substr(a.time_in, 1, 10) >= ? OR (a.time_out IS NOT NULL AND substr(a.time_out, 1, 10) >= ?))"
+            sql += " AND (SUBSTRING(a.time_in, 1, 10) >= ? "
+            sql += "OR (a.time_out IS NOT NULL AND SUBSTRING(a.time_out, 1, 10) >= ?))"
             parameters.extend([date_from, date_from])
         else:
             field = "a.time_out" if event_type == "time_out" else "a.time_in"
-            sql += f" AND substr({field}, 1, 10) >= ?"
+            sql += f" AND SUBSTRING({field}, 1, 10) >= ?"
             parameters.append(date_from)
     elif date_to:
         if event_type == "all":
-            sql += " AND (substr(a.time_in, 1, 10) <= ? OR (a.time_out IS NOT NULL AND substr(a.time_out, 1, 10) <= ?))"
+            sql += " AND (SUBSTRING(a.time_in, 1, 10) <= ? "
+            sql += "OR (a.time_out IS NOT NULL AND SUBSTRING(a.time_out, 1, 10) <= ?))"
             parameters.extend([date_to, date_to])
         else:
             field = "a.time_out" if event_type == "time_out" else "a.time_in"
-            sql += f" AND substr({field}, 1, 10) <= ?"
+            sql += f" AND SUBSTRING({field}, 1, 10) <= ?"
             parameters.append(date_to)
     sql += " ORDER BY a.time_in DESC, a.id DESC"
     with get_connection() as connection:

@@ -55,7 +55,9 @@ class _PostgresCursor:
         return self._cursor.rowcount
 
     def execute(self, sql, parameters=()):
-        sql = sql.replace("?", "%s")
+        sql = sql.replace("%", "%%").replace("?", "%s")
+        if sql.strip().upper() == "BEGIN IMMEDIATE":
+            sql = "BEGIN"
         insert = re.match(
             r"\s*INSERT(?:\s+OR\s+\w+)?\s+INTO\s+([a-zA-Z_]\w*)",
             sql,
@@ -79,7 +81,8 @@ class _PostgresCursor:
         return self
 
     def executemany(self, sql, parameter_sets):
-        self._cursor.executemany(sql.replace("?", "%s"), parameter_sets)
+        sql = sql.replace("%", "%%").replace("?", "%s")
+        self._cursor.executemany(sql, parameter_sets)
         self._lastrowid = None
         self._pending_row = None
         return self

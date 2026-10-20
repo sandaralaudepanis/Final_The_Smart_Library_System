@@ -1218,8 +1218,9 @@ def list_users():
         rows = connection.execute(
             """SELECT id, school_id, name, email, role, department, status, created_at
                FROM users WHERE role IN ('MIS Admin', 'Librarian')
-               AND (school_id LIKE ? OR name LIKE ? OR email LIKE ? OR role LIKE ?)
-               ORDER BY CASE status WHEN 'active' THEN 0 ELSE 1 END, name COLLATE NOCASE""",
+               AND (LOWER(school_id) LIKE LOWER(?) OR LOWER(name) LIKE LOWER(?)
+                    OR LOWER(email) LIKE LOWER(?) OR LOWER(role) LIKE LOWER(?))
+               ORDER BY CASE status WHEN 'active' THEN 0 ELSE 1 END, LOWER(name)""",
             (search, search, search, search),
         ).fetchall()
     return jsonify({"users": [dict(row) for row in rows]})
@@ -1583,8 +1584,10 @@ def list_system_users():
         rows = connection.execute(
             """SELECT id, school_id, name, email, role, department, status, created_at, last_login_at
                FROM users WHERE role IN ('MIS Admin', 'Librarian')
-               AND (? = '' OR role = ?) AND (name LIKE ? OR email LIKE ? OR school_id LIKE ?)
-               ORDER BY role, name COLLATE NOCASE""",
+               AND (? = '' OR role = ?)
+               AND (LOWER(name) LIKE LOWER(?) OR LOWER(email) LIKE LOWER(?)
+                    OR LOWER(school_id) LIKE LOWER(?))
+               ORDER BY role, LOWER(name)""",
             (role, role, search, search, search),
         ).fetchall()
     return jsonify({"users": [dict(row) for row in rows]})

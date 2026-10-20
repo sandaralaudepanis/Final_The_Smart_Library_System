@@ -14,6 +14,7 @@ from werkzeug.security import generate_password_hash
 
 
 DATABASE_PATH = Path(__file__).resolve().parent.parent / "smart_library.db"
+POSTGRES_SCHEMA_PATH = Path(__file__).resolve().parent / "schema_postgres.sql"
 load_dotenv(DATABASE_PATH.parent / ".env")
 
 DATABASE_ERROR_TYPES = (sqlite3.Error, psycopg2.Error)
@@ -211,6 +212,12 @@ def seed_required_staff_accounts(connection):
             )
 
 def initialize_database():
+    if os.environ.get("DATABASE_URL"):
+        schema = POSTGRES_SCHEMA_PATH.read_text(encoding="utf-8")
+        with get_connection() as connection:
+            connection.execute(schema)
+        return
+
     with get_connection() as connection:
         connection.execute("PRAGMA foreign_keys = OFF")
         connection.executescript(

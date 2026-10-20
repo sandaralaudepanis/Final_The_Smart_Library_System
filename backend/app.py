@@ -209,6 +209,10 @@ def manila_now():
     return datetime.now(MANILA_TIME).isoformat(timespec="seconds")
 
 
+def manila_local_timestamp():
+    return datetime.now(MANILA_TIME).strftime("%Y-%m-%d %H:%M:%S")
+
+
 def attendance_rows(search="", date_from="", date_to="", role="", department="", event_type="all"):
     for value in (date_from, date_to):
         if value:
@@ -691,8 +695,10 @@ def list_books():
                       quantity, available_quantity,
                       CASE WHEN available_quantity > 0 THEN 'Available' ELSE 'Not Available' END AS status
                FROM books WHERE status = 'active'
-                 AND (book_number LIKE ? OR barcode LIKE ? OR title LIKE ? OR author LIKE ? OR category LIKE ?)
-               ORDER BY title COLLATE NOCASE""",
+                 AND (LOWER(book_number) LIKE LOWER(?) OR LOWER(barcode) LIKE LOWER(?)
+                      OR LOWER(title) LIKE LOWER(?) OR LOWER(author) LIKE LOWER(?)
+                      OR LOWER(category) LIKE LOWER(?))
+               ORDER BY LOWER(title)""",
             (search, search, search, search, search),
         ).fetchall()
     return jsonify({"books": [dict(row) for row in rows]})
@@ -924,8 +930,9 @@ def find_borrowers():
         rows = connection.execute(
             """SELECT id, school_id, name, email, role, department FROM users
                WHERE status = 'active' AND role IN ('Student', 'Faculty')
-               AND (school_id LIKE ? OR name LIKE ? OR email LIKE ?)
-               ORDER BY name COLLATE NOCASE LIMIT 20""",
+               AND (LOWER(school_id) LIKE LOWER(?) OR LOWER(name) LIKE LOWER(?)
+                    OR LOWER(email) LIKE LOWER(?))
+               ORDER BY LOWER(name) LIMIT 20""",
             (search, search, search),
         ).fetchall()
     return jsonify({"borrowers": [dict(row) for row in rows]})
@@ -966,7 +973,6 @@ def borrow_book():
 
     try:
         with get_connection() as connection:
-            connection.execute("BEGIN IMMEDIATE")
             if barcode:
                 book = connection.execute(
                     "SELECT id, barcode, available_quantity FROM books WHERE barcode = ? AND status = 'active'",
@@ -990,19 +996,23 @@ def borrow_book():
                 return api_error("No active student or faculty member has that school ID.", 404)
             if not institutional_email:
                 institutional_email = borrower["email"]
-            if book["available_quantity"] < 1:
+            stock_update = connection.execute(
+                """UPDATE books SET available_quantity = available_quantity - 1
+                   WHERE id = ? AND status = 'active' AND available_quantity > 0""",
+                (book["id"],),
+            )
+            if stock_update.rowcount == 0:
                 return api_error("There are no available copies of this book.", 409)
             connection.execute(
                 """INSERT INTO book_transactions
                    (book_id, borrower_id, processed_by, borrower_school_id, borrower_name,
                     borrower_department, processor_school_id, processor_name, processor_department,
                     barcode, institutional_email, borrow_date, due_date)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', 'localtime'), ?)""",
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (book["id"], borrower["id"], g.user["id"], borrower["school_id"], borrower["name"],
                  borrower["department"], g.user["school_id"], g.user["name"], g.user["department"],
-                 book["barcode"], institutional_email, due_date),
+                 book["barcode"], institutional_email, manila_local_timestamp(), due_date),
             )
-            connection.execute("UPDATE books SET available_quantity = available_quantity - 1 WHERE id = ?", (book["id"],))
         return jsonify({"message": "Book borrowed."}), 201
     except INTEGRITY_ERROR_TYPES:
         return api_error("Unable to create the transaction.", 409)
@@ -1012,7 +1022,6 @@ def borrow_book():
 @roles_required("MIS Admin", "Librarian")
 def return_book(transaction_id):
     with get_connection() as connection:
-        connection.execute("BEGIN IMMEDIATE")
         transaction = connection.execute(
             "SELECT book_id, status FROM book_transactions WHERE id = ?", (transaction_id,)
         ).fetchone()
@@ -1020,13 +1029,20 @@ def return_book(transaction_id):
             return api_error("Transaction not found.", 404)
         if transaction["status"] != "borrowed":
             return api_error("This book has already been returned.", 409)
-        connection.execute(
-            "UPDATE book_transactions SET status = 'returned', return_date = datetime('now', 'localtime') WHERE id = ?",
-            (transaction_id,),
+        transaction_update = connection.execute(
+            """UPDATE book_transactions SET status = 'returned', return_date = ?
+               WHERE id = ? AND status = 'borrowed'""",
+            (manila_local_timestamp(), transaction_id),
         )
-        connection.execute(
-            "UPDATE books SET available_quantity = available_quantity + 1 WHERE id = ?", (transaction["book_id"],)
+        if transaction_update.rowcount == 0:
+            return api_error("This book has already been returned.", 409)
+        stock_update = connection.execute(
+            """UPDATE books SET available_quantity = available_quantity + 1
+               WHERE id = ? AND available_quantity < quantity""",
+            (transaction["book_id"],),
         )
+        if stock_update.rowcount == 0:
+            raise RuntimeError("Returned book stock could not be restored without exceeding quantity.")
     return jsonify({"message": "Book returned."})
 
 
@@ -1062,21 +1078,29 @@ def book_activity_rows(overdue_only=False):
     sql = """
         SELECT t.id, COALESCE(NULLIF(t.borrower_school_id, ''), u.school_id, '') AS school_id,
                COALESCE(NULLIF(t.borrower_name, ''), u.name, '') AS borrower_name, b.barcode, b.title,
-               t.borrow_date, t.due_date,
-               CAST(julianday(?) - julianday(date(t.due_date)) AS INTEGER) AS days_overdue,
-               CASE WHEN date(t.due_date) < ? THEN 'Overdue' ELSE 'Borrowed' END AS status
+               t.borrow_date, t.due_date
         FROM book_transactions t
         JOIN books b ON b.id = t.book_id
         LEFT JOIN users u ON u.id = t.borrower_id
         WHERE t.status = 'borrowed'
     """
-    parameters = [today, today]
-    if overdue_only:
-        sql += " AND date(t.due_date) < ?"
-        parameters.append(today)
-    sql += " ORDER BY t.due_date, borrower_name COLLATE NOCASE"
+    sql += " ORDER BY t.due_date, LOWER(COALESCE(NULLIF(t.borrower_name, ''), u.name, ''))"
     with get_connection() as connection:
-        return [dict(row) for row in connection.execute(sql, parameters).fetchall()]
+        rows = [dict(row) for row in connection.execute(sql).fetchall()]
+    today_date = date.fromisoformat(today)
+    activities = []
+    for row in rows:
+        try:
+            due_date = date.fromisoformat(row["due_date"][:10])
+        except (TypeError, ValueError):
+            due_date = None
+        is_overdue = due_date is not None and due_date < today_date
+        if overdue_only and not is_overdue:
+            continue
+        row["days_overdue"] = (today_date - due_date).days if due_date else None
+        row["status"] = "Overdue" if is_overdue else "Borrowed"
+        activities.append(row)
+    return activities
 
 
 @app.get("/api/dashboard/people-inside")

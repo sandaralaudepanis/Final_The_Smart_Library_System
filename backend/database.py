@@ -159,13 +159,21 @@ def get_connection():
         connection.close()
 
 
+
 def seed_required_staff_accounts(connection):
+    """Create required staff accounts and optionally reset their passwords."""
+    reset_passwords = (
+        os.environ.get("SMART_LIBRARY_RESET_STAFF_PASSWORDS", "0").strip() == "1"
+    )
+
     required_accounts = [
         {
             "school_id": "MIS-001",
             "name": "PTC MIS",
             "email": "mis@paterostechnologicalcollege.edu.ph",
-            "password": "admin123",
+            "password": os.environ.get(
+                "SMART_LIBRARY_ADMIN_PASSWORD", "admin123"
+            ),
             "role": "MIS Admin",
             "department": "MIS",
         },
@@ -173,28 +181,58 @@ def seed_required_staff_accounts(connection):
             "school_id": "LIB-001",
             "name": "PTC Librarian",
             "email": "librarian@paterostechnologicalcollege.edu.ph",
-            "password": "librarian123",
+            "password": os.environ.get(
+                "SMART_LIBRARY_LIBRARIAN_PASSWORD", "librarian123"
+            ),
             "role": "Librarian",
             "department": "Library",
         },
     ]
 
     for account in required_accounts:
+        email = account["email"].strip().lower()
+        password = account["password"]
+
+        if not password:
+            raise ValueError(
+                f"Password environment variable is empty for {account['role']}."
+            )
+
+        password_hash = generate_password_hash(password)
+
         record = connection.execute(
-            "SELECT id FROM users WHERE lower(email) = ? OR school_id = ? ORDER BY id LIMIT 1",
-            (account["email"].lower(), account["school_id"]),
+            """
+            SELECT id
+            FROM users
+            WHERE lower(email) = ? OR school_id = ?
+            ORDER BY id
+            LIMIT 1
+            """,
+            (email, account["school_id"]),
         ).fetchone()
+
         if record:
             connection.execute(
-                """UPDATE users
-                   SET school_id = ?, name = ?, email = ?,
-                       password_hash = COALESCE(password_hash, ?), role = ?, department = ?
-                   WHERE id = ?""",
+                """
+                UPDATE users
+                SET school_id = ?,
+                    name = ?,
+                    email = ?,
+                    password_hash = CASE
+                        WHEN ? THEN ?
+                        ELSE COALESCE(password_hash, ?)
+                    END,
+                    role = ?,
+                    department = ?
+                WHERE id = ?
+                """,
                 (
                     account["school_id"],
                     account["name"],
-                    account["email"].lower(),
-                    generate_password_hash(account["password"]),
+                    email,
+                    reset_passwords,
+                    password_hash,
+                    password_hash,
                     account["role"],
                     account["department"],
                     record["id"],
@@ -202,13 +240,23 @@ def seed_required_staff_accounts(connection):
             )
         else:
             connection.execute(
-                """INSERT INTO users (school_id, name, email, password_hash, role, department, status)
-                   VALUES (?, ?, ?, ?, ?, ?, 'active')""",
+                """
+                INSERT INTO users (
+                    school_id,
+                    name,
+                    email,
+                    password_hash,
+                    role,
+                    department,
+                    status
+                )
+                VALUES (?, ?, ?, ?, ?, ?, 'active')
+                """,
                 (
                     account["school_id"],
                     account["name"],
-                    account["email"].lower(),
-                    generate_password_hash(account["password"]),
+                    email,
+                    password_hash,
                     account["role"],
                     account["department"],
                 ),
@@ -219,6 +267,7 @@ def initialize_database():
         schema = POSTGRES_SCHEMA_PATH.read_text(encoding="utf-8")
         with get_connection() as connection:
             connection.execute(schema)
+            seed_required_staff_accounts(connection)
         return
 
     with get_connection() as connection:

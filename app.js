@@ -2,7 +2,7 @@
 (function () {
   "use strict";
 
-  const API = "/api";
+  const API = "https://final-the-smart-library-system.onrender.com";
   let currentUser = null;
   let books = [];
   let transactions = [];

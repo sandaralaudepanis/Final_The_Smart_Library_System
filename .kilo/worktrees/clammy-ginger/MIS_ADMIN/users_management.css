@@ -1,0 +1,258 @@
+/* ============================================================
+   Smart Library System — users_management.css
+   Users Management Page
+   Pateros Technological College
+   ============================================================ */
+
+/* ---------- 1. Design Tokens ---------- */
+:root {
+  color-scheme: light;
+
+  /* Sidebar */
+  --sidebar-top: #2A5941;
+  --sidebar-bottom: #1E3F2E;
+  --sidebar-active: #4C6E5C;
+  --sidebar-hover: rgba(255, 255, 255, .10);
+  --sidebar-text: #FFFFFF;
+  --sidebar-muted: #B9CFC2;
+  --sidebar-rule: rgba(255, 255, 255, .16);
+
+  /* Page Layout */
+  --app-bg: #EAF0E8;
+  --card-bg: #FFFFFF;
+  --ink: #1E3F2E;
+  --ink-soft: #5B7466;
+
+  /* Table Specifics */
+  --stage-border: #224332;
+  --th-bg: #224332;
+  --th-text: #FFFFFF;
+  --row-border: #E1E8E3;
+
+  /* Action Icon Colors */
+  --icon-edit: #6E8B3D;
+  --icon-delete: #A82F2F;
+  --btn-add-bg: #DFF3E4;
+  --btn-add-text: #1E5C38;
+
+  --r-panel: 6px;
+}
+
+/* ---------- 2. Base Reset ---------- */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--app-bg);
+  color: var(--ink);
+  font-family: 'Inter', 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 232px 1fr;
+  min-height: 100vh;
+}
+
+/* ---------- 3. Sidebar Navigation ---------- */
+.sidebar {
+  background: linear-gradient(180deg, var(--sidebar-top) 0%, var(--sidebar-bottom) 100%);
+  color: var(--sidebar-text);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.brand {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 16px 14px 16px 16px;
+  border-bottom: 1px solid var(--sidebar-rule);
+}
+
+.seal { flex: 0 0 auto; width: 36px; height: 36px; border-radius: 50%; }
+.brand-name { font-size: 14.5px; font-weight: 700; line-height: 1.15; letter-spacing: -.01em; }
+.brand-sub { font-size: 10.5px; color: var(--sidebar-muted); margin-top: 2px; line-height: 1.2; }
+
+.nav { padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; }
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: 9px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-size: 14.5px;
+  font-weight: 500;
+}
+.nav a:hover { background: var(--sidebar-hover); }
+.nav a.active { background: var(--sidebar-active); font-weight: 600; }
+.nav svg { flex: 0 0 auto; opacity: .95; }
+
+.side-foot { margin-top: auto; }
+.who {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--sidebar-rule);
+}
+.avatar { width: 32px; height: 32px; border-radius: 50%; flex: 0 0 auto; }
+.who-name { font-size: 14px; font-weight: 600; }
+
+.logout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-top: 1px solid var(--sidebar-rule);
+  color: #fff;
+  text-decoration: none;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+.logout:hover { background: var(--sidebar-hover); }
+
+/* ---------- 4. Main & Header Controls ---------- */
+.main { padding: 20px 24px 26px; }
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
+.sub { margin: 4px 0 0; font-size: 13.5px; font-weight: 500; color: var(--ink-soft); }
+
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFFFFF;
+  border: 1.5px solid #224332;
+  border-radius: 6px;
+  padding: 6px 12px;
+  width: 260px;
+}
+.search-box svg { color: #5B7466; flex: 0 0 auto; }
+.search-box input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+}
+
+/* Top Add User Bar */
+.top-action-bar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+}
+
+.btn-add-user {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--btn-add-bg);
+  color: var(--btn-add-text);
+  border: none;
+  border-radius: 16px;
+  padding: 6px 16px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+/* ---------- 5. Table Container Stage ---------- */
+.stage {
+  border: 3px solid var(--stage-border);
+  border-radius: var(--r-panel);
+  background: var(--card-bg);
+  overflow: hidden;
+}
+
+.scroll {
+  max-height: 75vh;
+  overflow: auto;
+}
+
+.scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+.scroll::-webkit-scrollbar-track { background: #E2ECE5; }
+.scroll::-webkit-scrollbar-thumb { background: #1E3F2E; border-radius: 4px; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 700px;
+  text-align: left;
+}
+
+th {
+  background: var(--th-bg);
+  color: var(--th-text);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  padding: 12px 18px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+td {
+  padding: 11px 18px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--row-border);
+}
+
+td.bold { font-weight: 600; color: #162B20; }
+th.center, td.center { text-align: center; }
+
+tbody tr:hover { background: rgba(34, 67, 50, 0.03); }
+
+/* Action Buttons */
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.btn-icon {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.1s ease;
+}
+
+.btn-icon:hover { transform: scale(1.15); }
+.btn-icon.edit svg { fill: var(--icon-edit); }
+.btn-icon.delete svg { fill: var(--icon-delete); }
+
+/* ---------- 6. Responsive ---------- */
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; }
+  .nav { flex-direction: row; overflow-x: auto; padding: 8px; }
+  .nav a { white-space: nowrap; padding: 9px 12px; }
+  .side-foot { display: flex; align-items: center; justify-content: space-between; }
+  .main { padding: 16px; }
+  .search-box { width: 100%; }
+}

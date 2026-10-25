@@ -1,0 +1,159 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
+
+body {
+    width: 100%;
+    height: 100vh;
+    overflow: hidden;
+
+    background: url("welcome__bg.png") center center / cover no-repeat;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.overlay {
+    position: fixed;
+
+    width: 100%;
+    height: 100%;
+
+    background: #00000033;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+/* Welcome Card */
+
+.welcome-card {
+    width: 90%;
+    max-width: 1200px;
+
+    height: 700px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 70px;
+
+    background: #fffff0c7;
+
+    backdrop-filter: blur(6px);
+
+    border: 8px solid #78785ad9;
+
+    border-radius: 18px;
+
+    cursor: pointer;
+}
+
+
+/* Logo */
+
+.logo {
+    width: 390px;
+}
+
+
+/* Text */
+
+.text h1 {
+    font-size: 58px;
+    font-weight: 800;
+
+    color: #111111;
+
+    line-height: 1.1;
+}
+
+.text p {
+    font-size: 34px;
+
+    color: #222222;
+
+    margin-top: 8px;
+}
+
+
+/* Flash */
+
+#flash {
+    position: fixed;
+
+    inset: 0;
+
+    background: #ffffff;
+
+    opacity: 0;
+
+    pointer-events: none;
+
+    z-index: 9999;
+}
+
+#flash.show {
+    animation: flash 0.25s forwards;
+}
+
+
+/* Flash Animation */
+
+@keyframes flash {
+
+    0% {
+        opacity: 0;
+    }
+
+    40% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+
+}
+
+
+/* Responsive */
+
+@media (max-width: 900px) {
+
+    .welcome-card {
+        flex-direction: column;
+
+        height: auto;
+
+        padding: 60px 30px;
+
+        gap: 30px;
+    }
+
+    .logo {
+        width: 170px;
+    }
+
+    .text {
+        text-align: center;
+    }
+
+    .text h1 {
+        font-size: 40px;
+    }
+
+    .text p {
+        font-size: 24px;
+    }
+
+}

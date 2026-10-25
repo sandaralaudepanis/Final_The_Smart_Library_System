@@ -1,0 +1,163 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    min-height: 100vh;
+
+    background-image: url("welcome__bg.png");
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+
+/* Verification Container */
+
+.verification-container {
+    width: 460px;
+    min-height: 470px;
+
+    padding: 30px 45px;
+
+    background: #e6ecd8;
+    border-radius: 15px;
+
+    position: relative;
+
+    box-shadow: 0 4px 15px #00000026;
+}
+
+
+/* Back Button */
+
+.back-button {
+    position: absolute;
+
+    top: 25px;
+    left: 35px;
+
+    font-size: 48px;
+    font-weight: 300;
+
+    color: #666666;
+
+    text-decoration: none;
+    line-height: 1;
+}
+
+
+/* Logo */
+
+.logo {
+    display: block;
+
+    width: 90px;
+    height: 90px;
+
+    object-fit: contain;
+
+    margin: 5px auto 25px auto;
+}
+
+
+/* Title */
+
+h1 {
+    text-align: center;
+
+    font-size: 30px;
+    font-weight: 600;
+
+    color: #111111;
+
+    margin-bottom: 40px;
+}
+
+
+/* Verification Code */
+
+.code-container {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+
+    margin-bottom: 40px;
+}
+
+.code-container input {
+    width: 48px;
+    height: 55px;
+
+    border: none;
+    background: #ffffff;
+
+    text-align: center;
+
+    font-size: 24px;
+    font-weight: 600;
+
+    outline: none;
+}
+
+.code-container input:focus {
+    outline: 2px solid #64b46466;
+}
+
+
+/* Confirm Button */
+
+.confirm-button {
+    display: block;
+
+    width: 138px;
+    height: 40px;
+
+    margin: 0 auto;
+
+    border: none;
+    border-radius: 12px;
+
+    background: #9cdda0;
+    color: #174d1b;
+
+    font-size: 20px;
+
+    cursor: pointer;
+}
+
+.confirm-button:hover {
+    background: #82cf87;
+}
+
+
+/* Responsive */
+
+@media (max-width: 600px) {
+
+    .verification-container {
+        width: 90%;
+        padding: 30px;
+    }
+
+    h1 {
+        font-size: 26px;
+    }
+
+    .code-container {
+        gap: 7px;
+    }
+
+    .code-container input {
+        width: 42px;
+        height: 50px;
+    }
+
+}

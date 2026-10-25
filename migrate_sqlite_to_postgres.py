@@ -63,7 +63,9 @@ def validate_columns(sqlite_connection, postgres_cursor):
         sqlite_columns = tuple(
             row["name"] for row in sqlite_connection.execute(f'PRAGMA table_info("{table}")')
         )
-        if sqlite_columns != expected_columns:
+        # Column order differs between databases created fresh and ones upgraded
+        # with ALTER TABLE; every query names its columns, so compare as sets.
+        if set(sqlite_columns) != set(expected_columns):
             raise RuntimeError(
                 f"SQLite columns for {table} do not match the migration column list."
             )
@@ -76,7 +78,7 @@ def validate_columns(sqlite_connection, postgres_cursor):
             (table,),
         )
         postgres_columns = tuple(row[0] for row in postgres_cursor.fetchall())
-        if postgres_columns != expected_columns:
+        if set(postgres_columns) != set(expected_columns):
             raise RuntimeError(
                 f"PostgreSQL columns for {table} do not match the migration column list."
             )
@@ -244,6 +246,12 @@ def run_migration(dry_run):
         dsn = extensions.make_dsn(database_url, sslmode="require")
         postgres_connection = psycopg2.connect(dsn)
         postgres_connection.autocommit = False
+        # Create the tables if the web service has not started yet (idempotent).
+        with postgres_connection.cursor() as cursor:
+            cursor.execute(
+                (ROOT_DIRECTORY / "backend" / "schema_postgres.sql").read_text(encoding="utf-8")
+            )
+        postgres_connection.commit()
         with postgres_connection.cursor() as cursor:
             cursor.execute(
                 sql.SQL("LOCK TABLE {} IN ACCESS EXCLUSIVE MODE").format(

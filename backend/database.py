@@ -576,9 +576,7 @@ def initialize_database():
             users = [
                 ("MIS-001", "PTC MIS", "mis@paterostechnologicalcollege.edu.ph", "admin123", "MIS Admin", "MIS"),
                 ("LIB-001", "PTC Librarian", "labrarian@paterostechnologicalcollege.edu.ph", "librarian123", "Librarian", "Library"),
-                ("2023-10252", "Sandara Panis", "2023-10252@student.ptc.local", None, "Student", "BSIT"),
-                ("2022-09512", "Leonardo Sayas", "2022-09512@student.ptc.local", None, "Student", "BSIT"),
-                ("2023-87463", "Kathleen Mangui", "2023-87463@student.ptc.local", None, "Student", "BSIT"),
+                
             ]
             for school_id, name, email, password, role, department in users:
                 password_hash = generate_password_hash(password) if password else None
@@ -592,18 +590,7 @@ def initialize_database():
 
         book_count = connection.execute("SELECT COUNT(*) FROM books").fetchone()[0]
         if book_count == 0:
-            books = [
-                ("BK-001", "Harry Potter and the Sorcerer's Stone", "J.K. Rowling", "Fiction", "1997-06-26", 1),
-                ("BK-002", "A Brief History of Time", "Stephen Hawking", "Science", "1988-04-01", 3),
-                ("BK-003", "Learning Python", "Mark Lutz", "Technology", "2016-07-01", 4),
-                ("BK-004", "Computer Networking: A Top-Down Approach", "James F. Kurose", "Technology", "2016-03-15", 2),
-                ("BK-005", "Sapiens: A Brief History of Humankind", "Yuval Noah Harari", "History", "2014-09-04", 2),
-                ("BK-006", "Romeo and Juliet", "William Shakespeare", "Literature", "1597-01-01", 7),
-                ("BK-007", "Mastering the Art of Cooking", "Julia Child", "Culinary", "1961-10-16", 3),
-                ("BK-008", "Rich Dad Poor Dad", "Robert Kiyosaki", "Business", "1997-04-08", 5),
-                ("BK-009", "Gregg Shorthand College Book 1", "Charles E. Zoubek", "Business", "1989-04-28", 3),
-                ("BK-010", "Gregg Shorthand College Book 2", "Louis A. Leslie", "Business", "1989-04-28", 4),
-            ]
+
             connection.executemany(
                 """INSERT INTO books
                    (book_number, barcode, title, author, category, published_date, quantity, available_quantity)

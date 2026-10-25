@@ -52,7 +52,7 @@ Leave this terminal running too. On its first start, the station downloads the Y
 When created, the default development staff accounts use:
 
 - MIS Admin: `mis@paterostechnologicalcollege.edu.ph` / `admin123`
-- Librarian: `labrarian@paterostechnologicalcollege.edu.ph` / `librarian123`
+- Librarian: `librarian@paterostechnologicalcollege.edu.ph` / `librarian123`
 
 These are not replacement credentials for an existing database; existing accounts and passwords are preserved. Sign in as MIS Admin, add or select a person, and upload that person's face image. Then use the camera station, select **Time-in** or **Time-out**, and confirm the action after the person is recognized. Recognition alone does not record attendance.
 

@@ -1,0 +1,269 @@
+/* ============================================================
+   Smart Library System — time_in_out.css
+   Time-in / Time-out Master Logs Page
+   Pateros Technological College
+   ============================================================ */
+
+/* ---------- 1. Design Tokens ---------- */
+:root {
+  color-scheme: light;
+
+  /* Sidebar */
+  --sidebar-top: #2A5941;
+  --sidebar-bottom: #1E3F2E;
+  --sidebar-active: #4C6E5C;
+  --sidebar-hover: rgba(255, 255, 255, .10);
+  --sidebar-text: #FFFFFF;
+  --sidebar-muted: #B9CFC2;
+  --sidebar-rule: rgba(255, 255, 255, .16);
+
+  /* Page & Stage Colors */
+  --app-bg: #EAF0E8;
+  --panel-bg: #224332;
+  --panel-border: #1E3F2E;
+  --card: #FFFFFF;
+  --ink: #1E3F2E;
+  --ink-soft: #5B7466;
+
+  /* Table Specifics */
+  --th-bg: #214835;
+  --th-text: #FFFFFF;
+  --row-border: #EEEEEE;
+  --row-hover: #F8FAF8;
+
+  /* Status Pills */
+  --mint-bg: #E4F8EC;
+  --mint-ink: #1E6B3A;
+  --blush-bg: #FDE8E8;
+  --blush-ink: #A23A3A;
+
+  --r-panel: 12px;
+  --r-card: 8px;
+  --shadow: 0 2px 8px rgba(0, 0, 0, .08);
+}
+
+/* Dark mode fallback support */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --app-bg: #111C16;
+    --card: #18251E;
+    --ink: #E8F1EA;
+    --ink-soft: #9CB3A4;
+    --th-bg: #152B20;
+    --row-border: #24352B;
+    --row-hover: #1E3026;
+    --mint-bg: #1C3A27;
+    --mint-ink: #8FE0AA;
+    --blush-bg: #3D2320;
+    --blush-ink: #F2B3A7;
+  }
+}
+
+/* ---------- 2. Base ---------- */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--app-bg);
+  color: var(--ink);
+  font-family: 'Inter', 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+:focus-visible {
+  outline: 3px solid #43C46C;
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 232px 1fr;
+  min-height: 100vh;
+}
+
+/* ---------- 3. Sidebar ---------- */
+.sidebar {
+  background: linear-gradient(180deg, var(--sidebar-top) 0%, var(--sidebar-bottom) 100%);
+  color: var(--sidebar-text);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.brand {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 16px 14px 16px 16px;
+  border-bottom: 1px solid var(--sidebar-rule);
+}
+
+.seal { flex: 0 0 auto; width: 36px; height: 36px; border-radius: 50%; }
+.brand-name { font-size: 14.5px; font-weight: 700; line-height: 1.15; letter-spacing: -.01em; }
+.brand-sub { font-size: 10.5px; color: var(--sidebar-muted); margin-top: 2px; line-height: 1.2; }
+
+.nav { padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; }
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: 9px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-size: 14.5px;
+  font-weight: 500;
+}
+.nav a:hover { background: var(--sidebar-hover); }
+.nav a.active { background: var(--sidebar-active); font-weight: 600; }
+.nav svg { flex: 0 0 auto; opacity: .95; }
+
+.side-foot { margin-top: auto; }
+.who {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--sidebar-rule);
+}
+.avatar { width: 32px; height: 32px; border-radius: 50%; flex: 0 0 auto; }
+.who-name { font-size: 14px; font-weight: 600; }
+
+.logout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-top: 1px solid var(--sidebar-rule);
+  color: #fff;
+  text-decoration: none;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+.logout:hover { background: var(--sidebar-hover); }
+
+/* ---------- 4. Main & Page Header ---------- */
+.main { padding: 20px 24px 26px; }
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 18px;
+}
+
+h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
+.sub { margin: 4px 0 0; font-size: 13.5px; font-weight: 500; color: var(--ink-soft); }
+
+/* Search Input Box */
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFFFFF;
+  border: 1.5px solid #C4D3C9;
+  border-radius: 6px;
+  padding: 6px 12px;
+  width: 260px;
+}
+.search-box svg { color: #6C7A71; flex: 0 0 auto; }
+.search-box input {
+  border: none;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.search-box input::placeholder { color: #8A9A90; }
+
+/* ---------- 5. Green Outer Stage ---------- */
+.stage {
+  background: var(--panel-bg);
+  border: 1px solid var(--panel-border);
+  border-radius: var(--r-panel);
+  padding: 8px;
+  box-shadow: var(--shadow);
+}
+
+.logs-card {
+  background: var(--card);
+  border-radius: var(--r-card);
+  overflow: hidden;
+}
+
+/* ---------- 6. Scroll Area & Table ---------- */
+.scroll {
+  max-height: 80vh;
+  overflow-y: auto;
+  overflow-x: auto;
+}
+
+.scroll::-webkit-scrollbar { width: 8px; height: 8px; }
+.scroll::-webkit-scrollbar-track { background: #E2ECE5; }
+.scroll::-webkit-scrollbar-thumb { background: #1E3F2E; border-radius: 4px; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 780px;
+  text-align: left;
+}
+
+th {
+  background: var(--th-bg);
+  color: var(--th-text);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  padding: 12px 18px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+td {
+  padding: 10.5px 18px;
+  font-size: 13px;
+  color: var(--ink);
+  border-bottom: 1px solid var(--row-border);
+  white-space: nowrap;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--row-hover); }
+
+.user-name { font-weight: 600; color: #162B20; }
+
+/* Action Badges */
+.pill {
+  display: inline-block;
+  padding: 4px 14px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.pill.in { background: var(--mint-bg); color: var(--mint-ink); }
+.pill.out { background: var(--blush-bg); color: var(--blush-ink); }
+
+/* ---------- 7. Responsive ---------- */
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; }
+  .nav { flex-direction: row; overflow-x: auto; padding: 8px; }
+  .nav a { white-space: nowrap; padding: 9px 12px; }
+  .side-foot { display: flex; align-items: center; justify-content: space-between; }
+  .who, .logout { border-top: 1px solid var(--sidebar-rule); }
+  .main { padding: 16px; }
+  .search-box { width: 100%; }
+}

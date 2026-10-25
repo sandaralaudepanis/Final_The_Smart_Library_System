@@ -1,0 +1,269 @@
+:root {
+  color-scheme: light;
+
+  /* Sidebar */
+  --sidebar-top: #2A5941;
+  --sidebar-bottom: #1E3F2E;
+  --sidebar-active: #4C6E5C;
+  --sidebar-hover: rgba(255, 255, 255, .10);
+  --sidebar-text: #FFFFFF;
+  --sidebar-muted: #B9CFC2;
+  --sidebar-rule: rgba(255, 255, 255, .16);
+
+  /* Main App Colors */
+  --app-bg: #EAF0E8;
+  --dark-header-bg: #224332;
+  --card-bg: #FFFFFF;
+  --ink: #1E3F2E;
+  --ink-soft: #5B7466;
+
+  /* Borders */
+  --stage-border: #224332;
+  --table-border: #8FA296;
+  --input-border: #839789;
+
+  /* Buttons */
+  --btn-report-bg: #224332;
+  --btn-report-text: #FFFFFF;
+
+  --r-card: 10px;
+  --r-panel: 8px;
+}
+
+/* ---------- 2. Base Reset ---------- */
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--app-bg);
+  color: var(--ink);
+  font-family: 'Inter', 'Segoe UI', Roboto, system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: 232px 1fr;
+  min-height: 100vh;
+}
+
+/* ---------- 3. Sidebar Navigation ---------- */
+.sidebar {
+  background: linear-gradient(180deg, var(--sidebar-top) 0%, var(--sidebar-bottom) 100%);
+  color: var(--sidebar-text);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+}
+
+.brand {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 16px 14px 16px 16px;
+  border-bottom: 1px solid var(--sidebar-rule);
+}
+
+.seal { flex: 0 0 auto; width: 36px; height: 36px; border-radius: 50%; }
+.brand-name { font-size: 14.5px; font-weight: 700; line-height: 1.15; letter-spacing: -.01em; }
+.brand-sub { font-size: 10.5px; color: var(--sidebar-muted); margin-top: 2px; line-height: 1.2; }
+
+.nav { padding: 10px 8px; display: flex; flex-direction: column; gap: 2px; }
+.nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: 9px;
+  color: var(--sidebar-text);
+  text-decoration: none;
+  font-size: 14.5px;
+  font-weight: 500;
+}
+.nav a:hover { background: var(--sidebar-hover); }
+.nav a.active { background: var(--sidebar-active); font-weight: 600; }
+.nav svg { flex: 0 0 auto; opacity: .95; }
+
+.side-foot { margin-top: auto; }
+.who {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 14px 16px;
+  border-top: 1px solid var(--sidebar-rule);
+}
+.avatar { width: 32px; height: 32px; border-radius: 50%; flex: 0 0 auto; }
+.who-name { font-size: 14px; font-weight: 600; }
+
+.logout {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  border-top: 1px solid var(--sidebar-rule);
+  color: #fff;
+  text-decoration: none;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+.logout:hover { background: var(--sidebar-hover); }
+
+/* ---------- 4. Main & Header Controls ---------- */
+.main { padding: 20px 24px 26px; }
+
+.head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+h1 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -.02em; color: var(--ink); }
+.sub { margin: 4px 0 0; font-size: 13.5px; font-weight: 500; color: var(--ink-soft); }
+
+.btn-generate {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--btn-report-bg);
+  color: var(--btn-report-text);
+  border: none;
+  border-radius: 20px;
+  padding: 8px 18px;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* ---------- 5. Filter Controls Box ---------- */
+.filter-card {
+  background: var(--card-bg);
+  border: 2px solid var(--stage-border);
+  border-radius: var(--r-card);
+  padding: 12px 16px;
+  margin-bottom: 16px;
+}
+
+.filter-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: #485E50;
+  margin-bottom: 8px;
+}
+
+.filter-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  color: #1E3F2E;
+  margin-bottom: 4px;
+}
+
+.input-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border: 1.5px solid var(--input-border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  background: #FFFFFF;
+}
+
+.input-wrap input {
+  border: none;
+  outline: none;
+  width: 100%;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #1E3F2E;
+}
+
+.input-wrap svg { color: #224332; flex: 0 0 auto; }
+
+/* ---------- 6. Stage & Table ---------- */
+.stage {
+  border: 3px solid var(--stage-border);
+  border-radius: var(--r-panel);
+  background: #FFFFFF;
+  overflow: hidden;
+}
+
+.stage-header {
+  background: var(--dark-header-bg);
+  color: #FFFFFF;
+  padding: 14px 18px;
+}
+
+.stage-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -.01em;
+}
+
+.stage-header p {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: #C0D6C8;
+}
+
+.scroll {
+  max-height: 60vh;
+  overflow: auto;
+}
+
+.scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+.scroll::-webkit-scrollbar-track { background: #E2ECE5; }
+.scroll::-webkit-scrollbar-thumb { background: #1E3F2E; border-radius: 4px; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+  text-align: left;
+}
+
+th, td {
+  padding: 10px 16px;
+  font-size: 13px;
+  border-bottom: 1px solid var(--table-border);
+}
+
+th {
+  background: #EFF5F0;
+  color: #1E3F2E;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: .03em;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  border-bottom: 2px solid var(--stage-border);
+}
+
+td.bold { font-weight: 600; color: #162B20; }
+
+tbody tr:hover { background: rgba(34, 67, 50, 0.03); }
+
+/* ---------- 7. Responsive ---------- */
+@media (max-width: 900px) {
+  .app { grid-template-columns: 1fr; }
+  .sidebar { position: static; height: auto; }
+  .nav { flex-direction: row; overflow-x: auto; padding: 8px; }
+  .nav a { white-space: nowrap; padding: 9px 12px; }
+  .side-foot { display: flex; align-items: center; justify-content: space-between; }
+  .who, .logout { border-top: 1px solid var(--sidebar-rule); }
+  .filter-grid { grid-template-columns: 1fr; }
+  .main { padding: 16px; }
+}

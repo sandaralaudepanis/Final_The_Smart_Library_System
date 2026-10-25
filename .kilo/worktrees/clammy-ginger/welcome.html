@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Library System</title>
+
+    <link rel="stylesheet" href="welcome.css">
+</head>
+<
+    <div id="flash"></div>
+
+        <div class="overlay">
+
+            <div class="welcome-card">
+
+                <img src="ptc_logo.png" alt="PTC Logo" class="logo">
+
+                <div class="text">
+                    <h1>SMART LIBRARY SYSTEM</h1>
+                    <p>Pateros Technological College</p>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+<script>
+
+document.body.addEventListener("click", function(){
+
+    const flash = document.getElementById("flash");
+
+    flash.classList.add("show");
+
+    setTimeout(() => {
+        window.location.href = "LogIn.html";
+    },250);
+
+});
+
+</script>
+
+</body>
+</html>

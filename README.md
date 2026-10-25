@@ -75,7 +75,7 @@ The Flask development servers bind to `127.0.0.1` and are for local development,
 These accounts are created when missing with the initial passwords below. Existing account passwords are preserved, and people records remain in their current database IDs.
 
 - MIS Admin: `mis@paterostechnologicalcollege.edu.ph` / `admin123`
-- Librarian: `labrarian@paterostechnologicalcollege.edu.ph` / `librarian123`
+- Librarian: `librarian@paterostechnologicalcollege.edu.ph` / `librarian123`
 
 Change these development passwords before exposing the system to a network. In a deployed environment, set a strong `SMART_LIBRARY_SECRET` and use HTTPS (`SMART_LIBRARY_HTTPS=1`).
 

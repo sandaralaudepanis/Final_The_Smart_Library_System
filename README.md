@@ -40,25 +40,12 @@ Open PowerShell terminal 2 and run:
 cd C:\SmartLibrarySystem001
 python -m venv face_recognition_iot\.venv
 .\face_recognition_iot\.venv\Scripts\python.exe -m pip install -r face_recognition_iot\requirements.txt
-$env:SMART_LIBRARY_IOT_KEY = "paste-the-same-generated-key-here"
+$env:SMART_LIBRARY_IOT_KEY = "4dd067e0d7f1b713db2614029ed2a3a0"
 $env:SMART_LIBRARY_API_URL = "http://127.0.0.1:5000"
 .\face_recognition_iot\.venv\Scripts\python.exe face_recognition_iot\app.py
 ```
 
 Leave this terminal running too. On its first start, the station downloads the YuNet and SFace model files into the ignored `face_recognition_iot\.models` folder; an internet connection is needed for this download. Open [http://127.0.0.1:5001/](http://127.0.0.1:5001/) and wait for the station status to say the camera is ready.
-
-### 3. Sign in and use face attendance
-
-When created, the default development staff accounts use:
-
-- MIS Admin: `mis@paterostechnologicalcollege.edu.ph` / `admin123`
-- Librarian: `librarian@paterostechnologicalcollege.edu.ph` / `librarian123`
-
-These are not replacement credentials for an existing database; existing accounts and passwords are preserved. Sign in as MIS Admin, add or select a person, and upload that person's face image. Then use the camera station, select **Time-in** or **Time-out**, and confirm the action after the person is recognized. Recognition alone does not record attendance.
-
-### 4. Stop the applications
-
-In each PowerShell terminal, press **Ctrl+C**. Stop the camera station first, then the main backend. Starting them again later requires setting the IoT key in both new terminals again; generate a new key if you no longer have the old one, and use that same new value for both services.
 
 ### Troubleshooting
 

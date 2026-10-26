@@ -118,13 +118,11 @@ def recovery_secret_hash(value):
     secret = app.config["SECRET_KEY"].encode("utf-8")
     return hmac.new(secret, value.encode("utf-8"), hashlib.sha256).hexdigest()
 
-
 def recovery_audit(connection, request_id, action, actor_id=None):
-    INSERT INTO password_recovery_rate_limits
+    connection.execute(
         "INSERT INTO password_recovery_audit (request_id, actor_id, action, created_at) VALUES (?, ?, ?, ?)",
         (request_id, actor_id, action, manila_now()),
     )
-
 
 def consume_recovery_rate_limit(connection, action, key, limit, window_seconds):
     now = datetime.now(MANILA_TIME)

@@ -120,7 +120,7 @@ def recovery_secret_hash(value):
 
 
 def recovery_audit(connection, request_id, action, actor_id=None):
-    connection.execute(
+    INSERT INTO password_recovery_rate_limits
         "INSERT INTO password_recovery_audit (request_id, actor_id, action, created_at) VALUES (?, ?, ?, ?)",
         (request_id, actor_id, action, manila_now()),
     )
@@ -137,7 +137,7 @@ def consume_recovery_rate_limit(connection, action, key, limit, window_seconds):
         """INSERT INTO password_recovery_rate_limits (action, key_hash, window_start, attempts)
            VALUES (?, ?, ?, 1)
            ON CONFLICT(action, key_hash, window_start)
-           DO UPDATE SET attempts = attempts + 1""",
+           DO UPDATE SET attempts = password_recovery_rate_limits.attempts + 1""",
         (action, key_hash, window_start),
     )
     count = connection.execute(

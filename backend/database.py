@@ -576,9 +576,6 @@ def initialize_database():
             users = [
                 ("MIS-001", "PTC MIS", "mis@paterostechnologicalcollege.edu.ph", "admin123", "MIS Admin", "MIS"),
                 ("LIB-001", "PTC Librarian", "labrarian@paterostechnologicalcollege.edu.ph", "librarian123", "Librarian", "Library"),
-                ("2023-10252", "Sandara Panis", "2023-10252@student.ptc.local", None, "Student", "BSIT"),
-                ("2022-09512", "Leonardo Sayas", "2022-09512@student.ptc.local", None, "Student", "BSIT"),
-                ("2023-87463", "Kathleen Mangui", "2023-87463@student.ptc.local", None, "Student", "BSIT"),
             ]
             for school_id, name, email, password, role, department in users:
                 password_hash = generate_password_hash(password) if password else None

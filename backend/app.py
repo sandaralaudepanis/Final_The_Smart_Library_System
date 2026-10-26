@@ -33,7 +33,6 @@ except ModuleNotFoundError:  # pragma: no cover - supports running from repo roo
         initialize_database,
     )
 
-
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 COVER_DIRECTORY = Path(__file__).resolve().parent / "uploads" / "book_covers"
 FACE_DIRECTORY = Path(__file__).resolve().parent / "uploads" / "person_faces"
@@ -43,16 +42,19 @@ app = Flask(__name__)
 app.config.update(
     SECRET_KEY=os.environ.get("SMART_LIBRARY_SECRET", "local-development-key-change-before-deployment"),
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE="Lax",
-    SESSION_COOKIE_SECURE=os.environ.get("SMART_LIBRARY_HTTPS", "0") == "1",
+    SESSION_COOKIE_SAMESITE="None",
+    SESSION_COOKIE_SECURE=True,
     MAX_CONTENT_LENGTH=MAX_COVER_SIZE + 64 * 1024,
+)
+CORS(
+    app,
+    origins=["smart-library-system-frontend.netlify.app"],
+    supports_credentials=True,
 )
 initialize_database()
 
-
 def api_error(message, status=400):
     return jsonify({"error": message}), status
-
 
 def signed_in_user():
     user_id = session.get("user_id")

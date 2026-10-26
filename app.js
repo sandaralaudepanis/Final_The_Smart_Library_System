@@ -29,7 +29,7 @@
     const result = await response.json().catch(function () { return {}; });
     if (!response.ok) {
       if (response.status === 401 && window.location.pathname.indexOf(".html") !== -1 &&
-          !["/LogIn.html", "/welcome.html", "/EmailVerification.html", "/VerificationCode.html"].includes(window.location.pathname)) {
+          !["/welcome.html", "/LogIn.html", "/EmailVerification.html", "/VerificationCode.html"].includes(window.location.pathname)) {
         window.location.href = "/LogIn.html";
       }
       throw new Error(result.error || "The request could not be completed.");

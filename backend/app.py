@@ -42,14 +42,9 @@ app = Flask(__name__)
 app.config.update(
     SECRET_KEY=os.environ.get("SMART_LIBRARY_SECRET", "local-development-key-change-before-deployment"),
     SESSION_COOKIE_HTTPONLY=True,
-    SESSION_COOKIE_SAMESITE="None",
+    SESSION_COOKIE_SAMESITE="Lax",
     SESSION_COOKIE_SECURE=True,
     MAX_CONTENT_LENGTH=MAX_COVER_SIZE + 64 * 1024,
-)
-CORS(
-    app,
-    origins=["smart-library-system-frontend.netlify.app"],
-    supports_credentials=True,
 )
 initialize_database()
 

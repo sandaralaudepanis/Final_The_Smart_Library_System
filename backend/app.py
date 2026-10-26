@@ -525,7 +525,7 @@ def approve_recovery_request():
             return api_error("This recovery request has expired or the account is inactive.", 410)
         timestamp = manila_now()
         if decision == "approve":
-            expires_at = (datetime.now(MANILA_TIME) + timedelta(minutes=15)).isoformat(timespec="seconds")
+            expires_at = (datetime.now(MANILA_TIME) + timedelta(minutes=2)).isoformat(timespec="seconds")
             connection.execute(
                 """UPDATE password_recovery_requests
                    SET status = 'approved', code_hash = ?, reset_token_hash = NULL, verify_attempts = 0,
